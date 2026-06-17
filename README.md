@@ -34,25 +34,30 @@ pip install yt-dlp
 
 Verify with `yt-dlp --version` and `ffmpeg -version`.
 
-## Installation
+## Setup
 
-**Go 1.26+** is required for `go install`.
+**One-time** — install and ensure `spo3fy` is on your `PATH`:
 
-**Option 1 — `go install`** (recommended):
+```shell
+go install github.com/whasbe1s5/Spo3fy@latest
+echo 'export GOBIN="$HOME/.local/bin"' >> ~/.zshrc
+echo 'export PATH="$GOBIN:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## Updates
+
 ```shell
 go install github.com/whasbe1s5/Spo3fy@latest
 ```
-This places `spo3fy` in your Go bin directory. Make sure that directory is on your `PATH`:
-```shell
-export PATH="$(go env GOPATH)/bin:$PATH"   # add to ~/.zshrc or ~/.bashrc
-```
 
-**Option 2 — manual** (from source):
+### Manual build (from source)
+
 ```shell
 git clone https://github.com/whasbe1s5/Spo3fy.git
 cd Spo3fy
 go build -o spo3fy .
-cp spo3fy ~/.local/bin/    # or /usr/local/bin/, or any directory on PATH
+cp spo3fy ~/.local/bin/
 ```
 
 ## Quick Start
