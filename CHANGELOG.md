@@ -26,11 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- 5 critical audit findings resolved:
+- **Critical fixes:**
   - CLI deadlock on download completion.
-  - Command injection via user-supplied input to yt-dlp.
-  - Server-Side Request Forgery (SSRF) in the scraper HTTP client.
-  - Bubble Tea state machine race condition on rapid key input.
-  - Double file extension appended to output filenames.
+  - Command injection via unsanitized metadata in yt-dlp args.
+  - SSRF via unvalidated cover art redirects.
+  - State machine: keys leaking into wrong TUI states.
+  - Double file extension on output filenames.
 
 [0.1.0]: https://github.com/whasbe1s5/spo3fy-go/releases/tag/v0.1.0
