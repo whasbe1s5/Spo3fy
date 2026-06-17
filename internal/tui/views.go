@@ -47,9 +47,17 @@ func settingsView(m model) string {
 		"    | |                      __/ |\n" +
 		"    |_|                     |___/ \n"))
 	b.WriteString("\n")
-
-	// ── Settings panel ────────────────────────────────────────────────
-	if m.editingField > 0 {
+	if len(m.cmdMatches) > 0 && m.editingField == 0 {
+		for i, c := range m.cmdMatches {
+			if i == m.cmdSelected {
+				b.WriteString(SettingsKeyStyle.Render("  ▶ " + c.cmd))
+			} else {
+				b.WriteString(HelpStyle.Render("    " + c.cmd))
+			}
+			b.WriteString(HelpStyle.Render("  —  " + c.desc))
+			b.WriteString("\n")
+		}
+	} else if m.editingField > 0 {
 		b.WriteString(renderEditingPrompt(m))
 	} else {
 		b.WriteString(renderSettingsTable(m))
@@ -76,18 +84,6 @@ func settingsView(m model) string {
 		}
 		if m.urlInput == "" {
 			b.WriteString(HelpStyle.Render(" (paste a Spotify URL)"))
-		}
-	}
-	if len(m.cmdMatches) > 0 && m.editingField == 0 {
-		b.WriteString("\n")
-		for i, c := range m.cmdMatches {
-			if i == m.cmdSelected {
-				b.WriteString(SettingsKeyStyle.Render("  ▶ " + c.cmd))
-			} else {
-				b.WriteString(HelpStyle.Render("    " + c.cmd))
-			}
-			b.WriteString(HelpStyle.Render("  —  " + c.desc))
-			b.WriteString("\n")
 		}
 	}
 	b.WriteString("\n\n")
