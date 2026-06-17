@@ -792,6 +792,79 @@ func Link(query string) ([]types.Track, error) {
 	}
 }
 
+// LinkResult bundles resolved tracks with container metadata (album/playlist name and cover).
+type LinkResult struct {
+	Type     types.Type
+	Name     string
+	ImageURL string
+	Tracks   []types.Track
+}
+
+// LinkWithMeta resolves a Spotify URL returning container metadata alongside tracks.
+// For single tracks, Name is empty and no folder grouping is needed.
+func LinkWithMeta(query string) (*LinkResult, error) {
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil, errors.New("empty query")
+	}
+
+	resourceType, resourceID := parseSpotifyResource(query)
+	if resourceID == "" {
+		tracks, err := Search(query, types.TypeTrack)
+		if err != nil {
+			return nil, err
+		}
+		return &LinkResult{Type: types.TypeTrack, Tracks: tracks}, nil
+	}
+
+	switch resourceType {
+	case "track":
+		t := ScrapeTrack(resourceID)
+		if t == nil {
+			return nil, fmt.Errorf("failed to scrape track: %s", resourceID)
+		}
+		return &LinkResult{Type: types.TypeTrack, Tracks: []types.Track{*t}}, nil
+
+	case "album":
+		album, err := ScrapeAlbum(resourceID)
+		if err != nil {
+			return nil, err
+		}
+		return &LinkResult{
+			Type:     types.TypeAlbum,
+			Name:     album.Name,
+			ImageURL: album.ImageURL,
+			Tracks:   album.Tracks,
+		}, nil
+
+	case "playlist":
+		playlist, err := ScrapePlaylist(resourceID)
+		if err != nil {
+			return nil, err
+		}
+		return &LinkResult{
+			Type:     types.TypePlaylist,
+			Name:     playlist.Name,
+			ImageURL: playlist.ImageURL,
+			Tracks:   playlist.Tracks,
+		}, nil
+
+	case "artist":
+		tracks, err := scrapeArtist(resourceID)
+		if err != nil {
+			return nil, err
+		}
+		return &LinkResult{Type: types.TypeArtist, Tracks: tracks}, nil
+
+	default:
+		tracks, err := Search(query, types.TypeTrack)
+		if err != nil {
+			return nil, err
+		}
+		return &LinkResult{Type: types.TypeTrack, Tracks: tracks}, nil
+	}
+}
+
 // parseSpotifyResource extracts resource type and ID from a Spotify URL or URI.
 func parseSpotifyResource(input string) (string, string) {
 	if matches := spotifyURIRE.FindStringSubmatch(input); len(matches) >= 3 {
