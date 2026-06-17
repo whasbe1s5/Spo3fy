@@ -645,22 +645,22 @@ func processTrack(
 		Success:    true,
 	}
 
+	// Write ID3 tags.
+	if tagErr := tagger.TagMetadata(finalPath, track, ffmpegPath); tagErr != nil {
+		result.Error = "tags: " + tagErr.Error()
+	}
+
 	// Embed cover art unless the user opted out or cover is the default icon.
 	if !cfg.skipCoverArt && !track.IsDefaultCover() {
 		coverPath, coverErr := downloadCoverArt(track.CoverArtURL, paths.TempDir)
 		if coverErr == nil && coverPath != "" {
 			if tagErr := tagger.EmbedCoverArt(finalPath, coverPath, ffmpegPath); tagErr != nil {
-				result.Error = "cover: " + tagErr.Error()
+				if result.Error != "" {
+					result.Error += "; cover: " + tagErr.Error()
+				} else {
+					result.Error = "cover: " + tagErr.Error()
+				}
 			}
-		}
-	}
-
-	// Write ID3 tags.
-	if tagErr := tagger.TagMetadata(finalPath, track, ffmpegPath); tagErr != nil {
-		if result.Error != "" {
-			result.Error += "; tags: " + tagErr.Error()
-		} else {
-			result.Error = tagErr.Error()
 		}
 	}
 
