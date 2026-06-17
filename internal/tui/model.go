@@ -105,6 +105,23 @@ type model struct {
 	downloadRunning bool
 	cursorVisible   bool
 	showHelp        bool
+	cmdMatches      []commandItem
+	cmdSelected     int
+}
+
+type commandItem struct {
+	cmd   string
+	desc  string
+	takesArg bool
+}
+
+var commands = []commandItem{
+	{"/help", "Show this help screen", false},
+	{"/search", "Search iTunes for tracks or albums", true},
+	{"/output", "Set download output directory", true},
+	{"/quality", "Set audio quality (best, 320k, 256k, ...)", true},
+	{"/format", "Set audio format (mp3, flac, aac, ...)", true},
+	{"/quit", "Exit Spo3fy", false},
 }
 
 // ── Internal message types ──────────────────────────────────────────────
@@ -217,38 +234,44 @@ func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, tea.Quit
 	}
-
-	switch m.state {
-	case stateSettings:
-		return m.handleSettingsKeys(msg)
-	case stateResults:
-		return m.handleResultsKeys(msg)
-	default:
-		return m, nil
-	}
-}
-
-// ── Settings key handling ───────────────────────────────────────────────
-
-func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	if m.editingField > 0 {
-		return m.handleEditingKeys(msg)
-	}
 	switch {
 	case keyMatches(msg, "enter"):
 		if m.urlInput == "" {
 			return m, nil
 		}
 		if strings.HasPrefix(m.urlInput, "/") {
+			if m.cmdSelected >= 0 && m.cmdSelected < len(m.cmdMatches) {
+				sel := m.cmdMatches[m.cmdSelected]
+				m.urlInput = sel.cmd + " "
+				m.cmdMatches = nil
+				m.cmdSelected = -1
+				if !sel.takesArg {
+					return m.handleSlashCmd(sel.cmd)
+				}
+				return m, nil
+			}
 			return m.handleSlashCmd(m.urlInput)
 		}
 		m.showHelp = false
 		m.autoDetectType()
 		return m.startDownload()
 
+	case keyMatches(msg, "up"), keyMatches(msg, "shift+tab"):
+		if m.cmdSelected > 0 {
+			m.cmdSelected--
+		}
+		return m, nil
+
+	case keyMatches(msg, "down"), keyMatches(msg, "tab"):
+		if m.cmdSelected < len(m.cmdMatches)-1 {
+			m.cmdSelected++
+		}
+		return m, nil
+
 	case keyMatches(msg, "backspace"):
 		if len(m.urlInput) > 0 {
 			m.urlInput = m.urlInput[:len(m.urlInput)-1]
+			m.updateCmdFilter()
 		}
 		return m, nil
 
@@ -267,12 +290,12 @@ func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case isRuneKey(msg):
 		m.urlInput += string(msg.Runes)
+		m.updateCmdFilter()
 		return m, nil
 	}
 
 	return m, nil
 }
-
 func (m *model) handleEditingKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case keyMatches(msg, "enter"):
@@ -379,7 +402,6 @@ func (m *model) resetForSettings() {
 }
 
 func (m *model) handleSlashCmd(input string) (tea.Model, tea.Cmd) {
-	m.urlInput = input
 	words := strings.Fields(input)
 	if len(words) == 0 {
 		return m, nil
@@ -406,11 +428,42 @@ func (m *model) handleSlashCmd(input string) (tea.Model, tea.Cmd) {
 		m.cfg.outputDir = words[1]
 		m.urlInput = ""
 		return m, nil
+	case "/quality":
+		if len(words) >= 2 {
+			m.cfg.quality = types.Quality(words[1])
+		}
+		m.urlInput = ""
+		return m, nil
+	case "/format":
+		if len(words) >= 2 {
+			m.cfg.format = types.Format(words[1])
+		}
+		m.urlInput = ""
+		return m, nil
 	case "/quit", "/exit":
 		return m, tea.Quit
 	default:
 		m.urlInput = ""
 		return m, nil
+	}
+}
+
+func (m *model) updateCmdFilter() {
+	if !strings.HasPrefix(m.urlInput, "/") {
+		m.cmdMatches = nil
+		m.cmdSelected = -1
+		return
+	}
+	prefix := strings.ToLower(m.urlInput)
+	m.cmdMatches = nil
+	m.cmdSelected = -1
+	for _, c := range commands {
+		if strings.HasPrefix(strings.ToLower(c.cmd), prefix) {
+			m.cmdMatches = append(m.cmdMatches, c)
+		}
+	}
+	if len(m.cmdMatches) > 0 {
+		m.cmdSelected = 0
 	}
 }
 

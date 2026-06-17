@@ -78,6 +78,18 @@ func settingsView(m model) string {
 			b.WriteString(HelpStyle.Render(" (paste a Spotify URL)"))
 		}
 	}
+	if len(m.cmdMatches) > 0 && m.editingField == 0 {
+		b.WriteString("\n")
+		for i, c := range m.cmdMatches {
+			if i == m.cmdSelected {
+				b.WriteString(SettingsKeyStyle.Render("  ▶ " + c.cmd))
+			} else {
+				b.WriteString(HelpStyle.Render("    " + c.cmd))
+			}
+			b.WriteString(HelpStyle.Render("  —  " + c.desc))
+			b.WriteString("\n")
+		}
+	}
 	b.WriteString("\n\n")
 
 	// ── Help text ─────────────────────────────────────────────────────
