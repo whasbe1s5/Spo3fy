@@ -7,3 +7,6 @@ spo3fy
 *.test
 *.out
 dist/
+node_modules/
+package-lock.json
+package.json

@@ -355,6 +355,7 @@ func ScrapePlaylist(playlistID string) (*types.Playlist, error) {
 				t := ScrapeTrack(tid)
 				if t == nil {
 					t = buildMinimalTrack(entry)
+					t.CoverArtURL = playlist.ImageURL
 				}
 				t.Playlist = playlistID
 				playlist.Tracks = append(playlist.Tracks, *t)
@@ -409,13 +410,14 @@ func fallbackScrapePlaylist(playlistID string) (*types.Playlist, error) {
 		t := ScrapeTrack(tid)
 		if t == nil {
 			t = &types.Track{
-				ID:       tid,
-				Name:     "Unknown Track",
-				Artists:  defaultArtists,
-				URL:      spotifyBaseURL + "/track/" + tid,
-				URI:      "spotify:track:" + tid,
-				Type:     types.TypeTrack,
-				Playlist: playlistID,
+				ID:          tid,
+				Name:        "Unknown Track",
+				Artists:     defaultArtists,
+				URL:         spotifyBaseURL + "/track/" + tid,
+				URI:         "spotify:track:" + tid,
+				Type:        types.TypeTrack,
+				Playlist:    playlistID,
+				CoverArtURL: playlist.ImageURL,
 			}
 		} else {
 			t.Playlist = playlistID

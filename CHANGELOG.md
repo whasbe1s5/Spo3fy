@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Cover art embedding: ffmpeg couldn't determine output format from `.tmp` extension, causing silent failure on both `EmbedCoverArt` and `TagMetadata`. Temporary files now carry the proper extension (e.g. `.tmp.mp3`) so ffmpeg selects the correct muxer.
+- Playlist downloads with no cover art: when `ScrapeTrack` fails for individual playlist tracks (e.g. rate-limited by Spotify), the per-track `CoverArtURL` now falls back to the playlist's own cover image instead of the Spotify branding icon or empty string. TUI path also now honors `IsDefaultCover()` like the CLI already did.
 
 ## [0.1.0] - 2025-06-17
 

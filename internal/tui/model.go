@@ -644,8 +644,8 @@ func processTrack(
 		Success:    true,
 	}
 
-	// Embed cover art unless the user opted out.
-	if !cfg.skipCoverArt {
+	// Embed cover art unless the user opted out or cover is the default icon.
+	if !cfg.skipCoverArt && !track.IsDefaultCover() {
 		coverPath, coverErr := downloadCoverArt(track.CoverArtURL, paths.TempDir)
 		if coverErr == nil && coverPath != "" {
 			if tagErr := tagger.EmbedCoverArt(finalPath, coverPath, ffmpegPath); tagErr != nil {
