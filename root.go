@@ -117,10 +117,25 @@ func headlessDownload(query string) error {
 		return fmt.Errorf("creating directories: %w", err)
 	}
 
+	// Ensure ffmpeg is available.
+	ffmpegPath := ""
+	if tagger.IsAvailable("") {
+		ffmpegPath = "ffmpeg"
+	} else if p, ok := tagger.IsDownloaded(paths.DataDir); ok {
+		ffmpegPath = p
+	} else {
+		fmt.Fprintln(os.Stderr, "ffmpeg not found. Downloading...")
+		p, err := tagger.DownloadFFmpeg(paths.DataDir, nil)
+		if err != nil {
+			return fmt.Errorf("failed to download ffmpeg: %w", err)
+		}
+		ffmpegPath = p
+	}
+
 	// Build grouping subdirectory when a group pattern is set.
 	outBase := paths.OutDir
 	if flagGroup != "" {
-		outBase = filepath.Join(outBase, safeDirName(flagGroup))
+		outBase = filepath.Join(outBase, config.SafeFilename(flagGroup))
 	}
 
 	m3uPaths := make([]string, 0, len(tracks))
@@ -128,7 +143,7 @@ func headlessDownload(query string) error {
 	for i, track := range tracks {
 		fmt.Fprintf(os.Stderr, "[%d/%d] %s\n", i+1, len(tracks), track)
 
-		outputPath := filepath.Join(outBase, safeDirName(track.String()))
+		outputPath := filepath.Join(outBase, config.SafeFilename(track.String()))
 		searchQuery := fmt.Sprintf("ytsearch:%s audio", track)
 
 		progress := make(chan downloader.ProgressUpdate, 64)
@@ -156,7 +171,7 @@ func headlessDownload(query string) error {
 		}
 
 		// Tag metadata.
-		if err := tagger.TagMetadata(audioPath, track, ""); err != nil {
+		if err := tagger.TagMetadata(audioPath, track, ffmpegPath); err != nil {
 			if flagVerbose {
 				fmt.Fprintf(os.Stderr, "  tagging error: %v\n", err)
 			}
@@ -164,7 +179,7 @@ func headlessDownload(query string) error {
 
 		// Embed cover art (unless skipped or default).
 		if !flagSkipCover && !track.IsDefaultCover() && track.CoverArtURL != "" {
-			if err := embedCoverTo(audioPath, track.CoverArtURL); err != nil {
+			if err := embedCoverTo(audioPath, track.CoverArtURL, ffmpegPath); err != nil {
 				if flagVerbose {
 					fmt.Fprintf(os.Stderr, "  cover art error: %v\n", err)
 				}
@@ -202,7 +217,7 @@ func locateOutput(basePath, expectedExt string) string {
 
 // embedCoverTo downloads cover art from coverURL and embeds it into audioPath
 // via tagger.EmbedCoverArt.
-func embedCoverTo(audioPath, coverURL string) error {
+func embedCoverTo(audioPath, coverURL, ffmpegPath string) error {
 	coverDir, err := os.MkdirTemp("", "spo3fy-cover-*")
 	if err != nil {
 		return err
@@ -248,23 +263,7 @@ func embedCoverTo(audioPath, coverURL string) error {
 	}
 	f.Close()
 
-	return tagger.EmbedCoverArt(audioPath, coverPath, "")
-}
-
-// safeDirName replaces filesystem-unsafe characters with underscores.
-func safeDirName(name string) string {
-	r := strings.NewReplacer(
-		"/", "_",
-		"\\", "_",
-		":", "_",
-		"*", "_",
-		"?", "_",
-		"\"", "_",
-		"<", "_",
-		">", "_",
-		"|", "_",
-	)
-	return r.Replace(name)
+	return tagger.EmbedCoverArt(audioPath, coverPath, ffmpegPath)
 }
 
 // writeM3U writes an extended M3U playlist file listing the given audio paths
