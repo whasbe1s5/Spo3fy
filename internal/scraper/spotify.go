@@ -55,36 +55,11 @@ type itunesResult struct {
 
 // ---- Embed page JSON types (playlist track list) ----
 
-type embedResponse struct {
-	TrackList []embedTrackEntry `json:"trackList"`
-}
-
 type embedTrackEntry struct {
-	Track embedTrack `json:"track"`
-}
-
-type embedTrack struct {
-	ID          string        `json:"id"`
-	Name        string        `json:"name"`
-	URI         string        `json:"uri"`
-	Artists     []embedArtist `json:"artists"`
-	Album       embedAlbum    `json:"album"`
-	DurationMS  int           `json:"duration_ms"`
-	TrackNumber int           `json:"track_number"`
-	DiscNumber  int           `json:"disc_number"`
-}
-
-type embedArtist struct {
-	Name string `json:"name"`
-}
-
-type embedAlbum struct {
-	Name   string       `json:"name"`
-	Images []embedImage `json:"images"`
-}
-
-type embedImage struct {
-	URL string `json:"url"`
+	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
+	Duration int    `json:"duration"`
+	URI      string `json:"uri"`
 }
 
 // ---- HTTP helpers ----
@@ -352,7 +327,7 @@ func ScrapePlaylist(playlistID string) (*types.Playlist, error) {
 	embedURL := spotifyBaseURL + "/embed/playlist/" + playlistID
 	body, err := fetchRaw(embedURL)
 	if err == nil {
-		if data := tryParseEmbedJSON(body); data != nil && len(data.TrackList) > 0 {
+		if entries := tryParseEmbedJSON(body); len(entries) > 0 {
 			playlist := &types.Playlist{
 				ID:  playlistID,
 				URL: spotifyBaseURL + "/playlist/" + playlistID,
@@ -374,9 +349,10 @@ func ScrapePlaylist(playlistID string) (*types.Playlist, error) {
 				playlist.Name = "Unknown Playlist"
 			}
 
-			playlist.Tracks = make([]types.Track, 0, len(data.TrackList))
-			for _, entry := range data.TrackList {
-				t := ScrapeTrack(entry.Track.ID)
+			playlist.Tracks = make([]types.Track, 0, len(entries))
+			for _, entry := range entries {
+				tid := ExtractSpotifyID(entry.URI)
+				t := ScrapeTrack(tid)
 				if t == nil {
 					t = buildMinimalTrack(entry)
 				}
@@ -451,53 +427,58 @@ func fallbackScrapePlaylist(playlistID string) (*types.Playlist, error) {
 }
 
 // tryParseEmbedJSON attempts to parse the playlist embed JSON from the page body.
-func tryParseEmbedJSON(body []byte) *embedResponse {
+// Returns the raw track entries (flat JSON: title, subtitle, uri, duration).
+func tryParseEmbedJSON(body []byte) []embedTrackEntry {
 	matches := trackListRE.FindSubmatch(body)
 	if len(matches) < 2 {
 		return nil
 	}
-	var resp embedResponse
-	if err := json.Unmarshal(matches[1], &resp.TrackList); err != nil {
+	var entries []embedTrackEntry
+	if err := json.Unmarshal(matches[1], &entries); err != nil {
 		return nil
 	}
-	return &resp
+	return entries
 }
-
-// buildMinimalTrack creates a minimal Track from embed JSON entry data.
 func buildMinimalTrack(entry embedTrackEntry) *types.Track {
-	track := entry.Track
+	tid := ExtractSpotifyID(entry.URI)
+	artists := parseArtistsFromSubtitle(entry.Subtitle)
 	t := &types.Track{
-		ID:          track.ID,
-		Name:        track.Name,
-		URL:         spotifyBaseURL + "/track/" + track.ID,
-		URI:         track.URI,
-		TrackNumber: track.TrackNumber,
-		DiscNumber:  track.DiscNumber,
-		DurationMS:  track.DurationMS,
-		AlbumName:   track.Album.Name,
+		ID:          tid,
+		Name:        defaultString(entry.Title, "Unknown Track"),
+		URL:         spotifyBaseURL + "/track/" + tid,
+		URI:         entry.URI,
+		DurationMS:  entry.Duration,
+		AlbumName:   "Unknown Album",
+		CoverArtURL: types.DefaultCoverArtURL,
+		Artists:     artists,
 		Type:        types.TypeTrack,
 	}
-	if len(track.Artists) > 0 {
-		t.Artists = make([]string, len(track.Artists))
-		for i, a := range track.Artists {
-			t.Artists[i] = a.Name
-		}
-	} else {
-		t.Artists = defaultArtists
-	}
-	if len(track.Album.Images) > 0 {
-		t.CoverArtURL = track.Album.Images[len(track.Album.Images)-1].URL
-	}
-	if t.CoverArtURL == "" {
-		t.CoverArtURL = types.DefaultCoverArtURL
-	}
-	if t.Name == "" {
-		t.Name = "Unknown Track"
-	}
-	if t.AlbumName == "" {
-		t.AlbumName = "Unknown Album"
-	}
 	return t
+}
+
+// parseArtistsFromSubtitle splits the subtitle (e.g. "Artist1, Artist2") into names.
+func parseArtistsFromSubtitle(subtitle string) []string {
+	if subtitle == "" {
+		return defaultArtists
+	}
+	parts := strings.Split(subtitle, ",")
+	names := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if n := strings.TrimSpace(p); n != "" {
+			names = append(names, n)
+		}
+	}
+	if len(names) == 0 {
+		return defaultArtists
+	}
+	return names
+}
+
+func defaultString(s, def string) string {
+	if s == "" {
+		return def
+	}
+	return s
 }
 
 // extractPlaylistName extracts the playlist name from og:title or <title>.

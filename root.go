@@ -99,9 +99,7 @@ func headlessDownload(query string) error {
 	quality := qualityFromFlag(flagQuality)
 	format := formatFromFlag(flagFormat)
 
-	if flagVerbose {
-		fmt.Fprintf(os.Stderr, "Resolving: %s\n", query)
-	}
+	fmt.Fprintf(os.Stderr, "Resolving: %s\n", query)
 
 	tracks, err := scraper.Link(query)
 	if err != nil {
@@ -110,9 +108,7 @@ func headlessDownload(query string) error {
 	if len(tracks) == 0 {
 		return fmt.Errorf("no tracks found for: %s", query)
 	}
-	if flagVerbose {
-		fmt.Fprintf(os.Stderr, "Found %d track(s)\n", len(tracks))
-	}
+	fmt.Fprintf(os.Stderr, "Found %d track(s)\n", len(tracks))
 
 	// Resolve output paths.
 	paths := config.Resolve("", flagOutput)
@@ -129,13 +125,8 @@ func headlessDownload(query string) error {
 	m3uPaths := make([]string, 0, len(tracks))
 
 	for i, track := range tracks {
-		if flagVerbose {
-			fmt.Fprintf(os.Stderr, "[%d/%d] %s\n", i+1, len(tracks), track)
-		}
+		fmt.Fprintf(os.Stderr, "[%d/%d] %s\n", i+1, len(tracks), track)
 
-		// yt-dlp outputs to outputPath.ext, where ext is determined by
-		// --audio-format.  We strip the extension from the search query
-		// output path and let yt-dlp add it.
 		outputPath := filepath.Join(outBase, safeDirName(track.String()))
 		searchQuery := fmt.Sprintf("ytsearch:%s audio", track)
 
@@ -145,25 +136,20 @@ func headlessDownload(query string) error {
 		go func() {
 			done <- downloader.Download(searchQuery, quality, format, outputPath, progress, 3)
 		}()
-		// Drain the progress channel so the downloader doesn't block.
+		// Show progress dots while downloading
 		for range progress {
+			fmt.Fprint(os.Stderr, ".")
 		}
 
 		if err := <-done; err != nil {
-			if flagVerbose {
-				fmt.Fprintf(os.Stderr, "  ERROR: %v\n", err)
-			}
+			fmt.Fprintf(os.Stderr, " ERROR: %v\n", err)
 			continue
 		}
+		fmt.Fprintln(os.Stderr)
 
-		// Locate the actual output file.  yt-dlp writes to outputPath.ext
-		// when --output is given without %(ext)s, but with our invocation
-		// it may use outputPath.%(ext)s.  Globbing handles both.
 		audioPath := locateOutput(outputPath, string(format))
 		if audioPath == "" {
-			if flagVerbose {
-				fmt.Fprintf(os.Stderr, "  output file not found for: %s\n", track)
-			}
+			fmt.Fprintf(os.Stderr, "  output file not found for: %s\n", track)
 			continue
 		}
 
