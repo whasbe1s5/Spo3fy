@@ -226,11 +226,18 @@ func resultsView(m model) string {
 
 	successCount := 0
 	failCount := 0
+	warnCount := 0
 	var failedTracks []string
+	var warnedTracks []string
 
 	for _, r := range m.results {
 		if r.Success {
 			successCount++
+			if r.Error != "" {
+				warnCount++
+				warnedTracks = append(warnedTracks,
+					fmt.Sprintf("  ⚠ %s — %s", r.Track.String(), r.Error))
+			}
 		} else {
 			failCount++
 			failedTracks = append(failedTracks,
@@ -240,11 +247,25 @@ func resultsView(m model) string {
 
 	// Summary line
 	summary := fmt.Sprintf("  %s %d downloaded", SuccessStyle.Render("✔"), successCount)
+	if warnCount > 0 {
+		summary += fmt.Sprintf("  |  %s %d warnings", WarnStyle.Render("⚠"), warnCount)
+	}
 	if failCount > 0 {
 		summary += fmt.Sprintf("  |  %s %d failed", ErrorStyle.Render("✘"), failCount)
 	}
 	b.WriteString(summary)
 	b.WriteString("\n\n")
+
+	// Warnings
+	if len(warnedTracks) > 0 {
+		b.WriteString(WarnStyle.Render("Warnings:"))
+		b.WriteString("\n")
+		for _, w := range warnedTracks {
+			b.WriteString(w)
+			b.WriteString("\n")
+		}
+		b.WriteString("\n")
+	}
 
 	// Failed tracks detail
 	if failCount > 0 {

@@ -48,6 +48,8 @@ var (
 	HelpStyle = lipgloss.NewStyle().
 			Faint(true)
 
+	WarnStyle = lipgloss.NewStyle().
+			Foreground(colYellow)
 	PanelStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(colBlue).
