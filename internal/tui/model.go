@@ -6,9 +6,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
+)
 
+import (
 	"github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -236,6 +239,7 @@ func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.urlInput == "" {
 			return m, nil
 		}
+		m.autoDetectType()
 		return m.startDownload()
 
 	case keyMatches(msg, "backspace"):
@@ -352,6 +356,21 @@ func (m *model) toggleField(field int) {
 		m.cfg.skipCoverArt = !m.cfg.skipCoverArt
 	case 8:
 		m.cfg.allAlbums = !m.cfg.allAlbums
+	}
+}
+
+// autoDetectType parses the URL input and sets the resource type.
+func (m *model) autoDetectType() {
+	u := strings.ToLower(m.urlInput)
+	switch {
+	case strings.Contains(u, "/playlist/"):
+		m.cfg.resourceType = types.TypePlaylist
+	case strings.Contains(u, "/album/"):
+		m.cfg.resourceType = types.TypeAlbum
+	case strings.Contains(u, "/artist/"):
+		m.cfg.resourceType = types.TypeArtist
+	case strings.Contains(u, "/track/"):
+		m.cfg.resourceType = types.TypeTrack
 	}
 }
 
