@@ -2,9 +2,6 @@ package tui
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -650,22 +647,13 @@ func processTrack(
 		result.Error = "tags: " + tagErr.Error()
 	}
 
-	// Embed cover art unless the user opted out or cover is the default icon.
+	// Embed cover art (same logic as CLI mode).
 	if !cfg.skipCoverArt && !track.IsDefaultCover() {
-		coverPath, coverErr := downloadCoverArt(track.CoverArtURL, paths.TempDir)
-		if coverErr == nil && coverPath != "" {
-			if tagErr := tagger.EmbedCoverArt(finalPath, coverPath, ffmpegPath); tagErr != nil {
-				if result.Error != "" {
-					result.Error += "; cover: " + tagErr.Error()
-				} else {
-					result.Error = "cover: " + tagErr.Error()
-				}
-			}
-		} else if coverErr != nil {
+		if coverErr := tagger.DownloadAndEmbedCover(finalPath, track.CoverArtURL, ffmpegPath); coverErr != nil {
 			if result.Error != "" {
-				result.Error += "; cover download: " + coverErr.Error()
+				result.Error += "; cover: " + coverErr.Error()
 			} else {
-				result.Error = "cover download: " + coverErr.Error()
+				result.Error = "cover: " + coverErr.Error()
 			}
 		}
 	}
@@ -673,63 +661,6 @@ func processTrack(
 	return result
 }
 
-// downloadCoverArt fetches a cover image from url and saves it to tempDir.
-// Returns the file path, or an empty string if no URL was given.
-func downloadCoverArt(url, tempDir string) (string, error) {
-	if url == "" {
-		return "", nil
-	}
-
-	if err := os.MkdirAll(tempDir, 0o755); err != nil {
-		return "", fmt.Errorf("create temp dir: %w", err)
-	}
-
-	ext := filepath.Ext(url)
-	if ext == "" {
-		ext = ".jpg"
-	}
-	dest := filepath.Join(tempDir, "cover"+ext)
-
-	client := &http.Client{
-		Timeout: 15 * time.Second,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 3 {
-				return fmt.Errorf("too many redirects")
-			}
-			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-				return fmt.Errorf("redirect to non-HTTP(S) scheme: %s", req.URL.Scheme)
-			}
-			return nil
-		},
-	}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return "", fmt.Errorf("fetch cover request: %w", err)
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("fetch cover: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("cover HTTP %d", resp.StatusCode)
-	}
-
-	out, err := os.Create(dest)
-	if err != nil {
-		return "", fmt.Errorf("create cover file: %w", err)
-	}
-	defer out.Close()
-
-	if _, err := io.Copy(out, resp.Body); err != nil {
-		return "", fmt.Errorf("write cover: %w", err)
-	}
-
-	return dest, nil
-}
 
 // ── listenDownload ──────────────────────────────────────────────────────
 

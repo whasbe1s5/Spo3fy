@@ -3,12 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/whasbe1s5/Spo3fy/internal/config"
@@ -216,60 +212,9 @@ func locateOutput(basePath, expectedExt string) string {
 }
 
 // embedCoverTo downloads cover art from coverURL and embeds it into audioPath
-// via tagger.EmbedCoverArt.
+// via tagger.DownloadAndEmbedCover.
 func embedCoverTo(audioPath, coverURL, ffmpegPath string) error {
-	coverDir, err := os.MkdirTemp("", "spo3fy-cover-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(coverDir)
-
-	ext := ".jpg"
-	if strings.HasSuffix(coverURL, ".png") {
-		ext = ".png"
-	}
-	coverPath := filepath.Join(coverDir, "cover"+ext)
-
-	client := &http.Client{
-		Timeout: 15 * time.Second,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 3 {
-				return fmt.Errorf("too many redirects")
-			}
-			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-				return fmt.Errorf("redirect to non-HTTP(S) scheme: %s", req.URL.Scheme)
-			}
-			return nil
-		},
-	}
-	req, err := http.NewRequest("GET", coverURL, nil)
-	if err != nil {
-		return fmt.Errorf("downloading cover art request: %w", err)
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("downloading cover art: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("downloading cover art: HTTP %d", resp.StatusCode)
-	}
-
-	f, err := os.Create(coverPath)
-	if err != nil {
-		return err
-	}
-
-	if _, err := io.Copy(f, resp.Body); err != nil {
-		f.Close()
-		return fmt.Errorf("writing cover art: %w", err)
-	}
-	f.Close()
-
-	return tagger.EmbedCoverArt(audioPath, coverPath, ffmpegPath)
+	return tagger.DownloadAndEmbedCover(audioPath, coverURL, ffmpegPath)
 }
 
 // writeM3U writes an extended M3U playlist file listing the given audio paths

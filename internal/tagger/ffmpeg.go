@@ -5,11 +5,14 @@ package tagger
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/whasbe1s5/Spo3fy/internal/types"
 )
@@ -138,4 +141,52 @@ func TagMetadata(audioPath string, track types.Track, ffmpegPath string) error {
 	}
 
 	return os.Rename(tmpPath, audioPath)
+}
+// DownloadAndEmbedCover downloads cover art from coverURL and embeds it into
+// audioPath. The temp file is created next to audioPath and removed afterwards.
+// Returns nil if coverURL is empty.
+func DownloadAndEmbedCover(audioPath, coverURL, ffmpegPath string) error {
+	if coverURL == "" {
+		return nil
+	}
+
+	ext := ".jpg"
+	if strings.HasSuffix(coverURL, ".png") {
+		ext = ".png"
+	}
+
+	f, err := os.CreateTemp(filepath.Dir(audioPath), "spo3fy-cover-*"+ext)
+	if err != nil {
+		return fmt.Errorf("create cover temp: %w", err)
+	}
+	coverPath := f.Name()
+	defer os.Remove(coverPath)
+
+	req, err := http.NewRequest("GET", coverURL, nil)
+	if err != nil {
+		f.Close()
+		return fmt.Errorf("cover download request: %w", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		f.Close()
+		return fmt.Errorf("cover download: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		f.Close()
+		return fmt.Errorf("cover download HTTP %d", resp.StatusCode)
+	}
+
+	if _, err := io.Copy(f, resp.Body); err != nil {
+		f.Close()
+		return fmt.Errorf("cover write: %w", err)
+	}
+	f.Close()
+
+	return EmbedCoverArt(audioPath, coverPath, ffmpegPath)
 }
