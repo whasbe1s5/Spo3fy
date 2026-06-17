@@ -242,7 +242,13 @@ func embedCoverTo(audioPath, coverURL, ffmpegPath string) error {
 			return nil
 		},
 	}
-	resp, err := client.Get(coverURL)
+	req, err := http.NewRequest("GET", coverURL, nil)
+	if err != nil {
+		return fmt.Errorf("downloading cover art request: %w", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("downloading cover art: %w", err)
 	}

@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -480,13 +481,34 @@ func ScrapePlaylist(playlistID string) (*types.Playlist, error) {
 	playlist.ImageURL = coverURL
 
 	entries := tryParseEmbedJSON(body)
-	playlist.Tracks = make([]types.Track, 0, len(entries))
-	for _, entry := range entries {
-		t := buildMinimalTrack(entry)
-		t.CoverArtURL = playlist.ImageURL
-		t.Playlist = playlistID
-		playlist.Tracks = append(playlist.Tracks, *t)
+	playlist.Tracks = make([]types.Track, len(entries))
+	var wg sync.WaitGroup
+	for i, entry := range entries {
+		wg.Add(1)
+		go func(idx int, ent embedTrackEntry) {
+			defer wg.Done()
+			t := buildMinimalTrack(ent)
+			t.Playlist = playlistID
+
+			// Attempt to resolve individual track metadata from iTunes Search API in parallel
+			searchTerm := t.Name
+			if len(t.Artists) > 0 {
+				searchTerm += " " + t.Artists[0]
+			}
+			results, err := Search(searchTerm, types.TypeTrack)
+			if err == nil && len(results) > 0 {
+				best := results[0]
+				t.AlbumName = best.AlbumName
+				t.CoverArtURL = best.CoverArtURL
+				t.ReleaseDate = best.ReleaseDate
+			} else {
+				t.CoverArtURL = playlist.ImageURL
+				t.AlbumName = "Unknown Album"
+			}
+			playlist.Tracks[idx] = *t
+		}(i, entry)
 	}
+	wg.Wait()
 
 	return playlist, nil
 }

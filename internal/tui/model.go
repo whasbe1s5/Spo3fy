@@ -661,6 +661,12 @@ func processTrack(
 					result.Error = "cover: " + tagErr.Error()
 				}
 			}
+		} else if coverErr != nil {
+			if result.Error != "" {
+				result.Error += "; cover download: " + coverErr.Error()
+			} else {
+				result.Error = "cover download: " + coverErr.Error()
+			}
 		}
 	}
 
@@ -696,7 +702,13 @@ func downloadCoverArt(url, tempDir string) (string, error) {
 			return nil
 		},
 	}
-	resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("fetch cover request: %w", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("fetch cover: %w", err)
 	}
