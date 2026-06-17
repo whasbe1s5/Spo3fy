@@ -62,35 +62,49 @@ func renderSettingsTable(m model) string {
 		SettingsValStyle.Render(string(m.cfg.quality)))
 	sb.WriteString(HelpStyle.Render("  [1]"))
 	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Higher bitrate = larger file, better sound"))
+	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Format     ")) +
 		SettingsValStyle.Render(string(m.cfg.format)))
 	sb.WriteString(HelpStyle.Render("  [2]"))
+	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Output audio container format"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Output Dir ")) +
 		SettingsValStyle.Render(m.cfg.outputDir))
 	sb.WriteString(HelpStyle.Render("  [3]"))
 	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Where downloaded files are saved"))
+	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Group Dir  ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.groupDir)))
 	sb.WriteString(HelpStyle.Render("  [4]"))
+	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Put tracks in album/playlist subfolders"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Create M3U ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.createM3U)))
 	sb.WriteString(HelpStyle.Render("  [5]"))
 	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Generate an .m3u playlist file"))
+	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Skip Cover ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.skipCoverArt)))
 	sb.WriteString(HelpStyle.Render("  [6]"))
 	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Don't embed cover art in audio files"))
+	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  All Albums ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.allAlbums)))
 	sb.WriteString(HelpStyle.Render("  [7]"))
+	sb.WriteString("\n")
+	sb.WriteString(HelpStyle.Render("      Download every album by an artist"))
 
 	return sb.String()
 }
