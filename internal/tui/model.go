@@ -114,14 +114,13 @@ type commandItem struct {
 	desc  string
 	takesArg bool
 }
-
 var commands = []commandItem{
 	{"/help", "Show this help screen", false},
+	{"/quit", "Exit Spo3fy", false},
 	{"/search", "Search iTunes for tracks or albums", true},
 	{"/output", "Set download output directory", true},
 	{"/quality", "Set audio quality (best, 320k, 256k, ...)", true},
 	{"/format", "Set audio format (mp3, flac, aac, ...)", true},
-	{"/quit", "Exit Spo3fy", false},
 }
 
 // ── Internal message types ──────────────────────────────────────────────
@@ -441,7 +440,7 @@ func (m *model) handleSlashCmd(input string) (tea.Model, tea.Cmd) {
 		}
 		m.urlInput = ""
 		return m, nil
-	case "/quit", "/exit":
+	case "/quit":
 		return m, tea.Quit
 	default:
 		m.urlInput = ""
@@ -790,9 +789,8 @@ func keyMatches(msg tea.KeyMsg, pattern string) bool {
 }
 
 func isRuneKey(msg tea.KeyMsg) bool {
-	return msg.Type == tea.KeyRunes && len(msg.Runes) > 0 && string(msg.Runes) != "q"
+	return msg.Type == tea.KeyRunes && len(msg.Runes) > 0
 }
-
 func isDigitKey(msg tea.KeyMsg) bool {
 	if msg.Type != tea.KeyRunes || len(msg.Runes) != 1 {
 		return false

@@ -19,7 +19,7 @@ func helpView(m model) string {
 		{"/help", "Toggle this help screen"},
 		{"/search <query>", "Search iTunes for tracks"},
 		{"/output <path>", "Set download output directory"},
-		{"/quit, /exit", "Exit Spo3fy"},
+		{"/quit", "Exit Spo3fy"},
 	}
 	for _, c := range cmds {
 		b.WriteString(SettingsKeyStyle.Render("  " + c.cmd))
@@ -89,7 +89,7 @@ func settingsView(m model) string {
 	b.WriteString("\n\n")
 
 	// ── Help text ─────────────────────────────────────────────────────
-	b.WriteString(HelpStyle.Render("Ctrl+Q or /exit: quit  |  Enter: start download  |  1-7: change setting"))
+	b.WriteString(HelpStyle.Render("Ctrl+Q, /quit: exit  |  Enter: start download  |  1-7: change setting"))
 	b.WriteString("\n")
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
@@ -208,7 +208,7 @@ func progressView(m model) string {
 	b.WriteString(fmt.Sprintf("  %.0f%%", overall))
 	b.WriteString("\n\n")
 
-	b.WriteString(HelpStyle.Render("Ctrl+Q or /exit: cancel and quit"))
+	b.WriteString(HelpStyle.Render("Ctrl+Q, /quit: cancel and exit"))
 	b.WriteString("\n")
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
@@ -258,7 +258,7 @@ func resultsView(m model) string {
 	}
 
 	// Prompt to continue
-	b.WriteString(HelpStyle.Render("Press Enter to return to settings, Ctrl+Q or /exit to quit"))
+	b.WriteString(HelpStyle.Render("Enter: back to settings  |  Ctrl+Q, /quit: exit"))
 	b.WriteString("\n")
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
