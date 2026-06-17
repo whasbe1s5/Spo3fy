@@ -33,4 +33,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bubble Tea state machine race condition on rapid key input.
   - Double file extension appended to output filenames.
 
-[0.1.0]: https://github.com/whasbe1s/spo3fy-go/releases/tag/v0.1.0
+[0.1.0]: https://github.com/whasbe1s5/spo3fy-go/releases/tag/v0.1.0

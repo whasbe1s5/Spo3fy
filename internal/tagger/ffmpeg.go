@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/whasbe1s/spo3fy-go/internal/types"
+	"github.com/whasbe1s5/spo3fy-go/internal/types"
 )
 
 // IsAvailable reports whether ffmpeg is found on PATH (when ffmpegPath is

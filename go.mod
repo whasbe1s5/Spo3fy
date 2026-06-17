@@ -1,4 +1,4 @@
-module github.com/whasbe1s/spo3fy-go
+module github.com/whasbe1s5/spo3fy-go
 
 go 1.26.4
 
