@@ -25,8 +25,21 @@ Spo3fy downloads Spotify tracks, albums, and playlists as MP3 (or other formats)
 
 ## Installation
 
+**Option 1 — `go install`** (recommended):
 ```shell
 go install github.com/whasbe1s/spo3fy-go@latest
+```
+This places `spo3fy` in your Go bin directory. Make sure that directory is on your `PATH`:
+```shell
+export PATH="$(go env GOPATH)/bin:$PATH"   # add to ~/.zshrc or ~/.bashrc
+```
+
+**Option 2 — manual** (from source):
+```shell
+git clone https://github.com/whasbe1s/spo3fy-go.git
+cd spo3fy-go
+go build -o spo3fy .
+cp spo3fy ~/.local/bin/    # or /usr/local/bin/, or any directory on PATH
 ```
 
 ## Quick Start
@@ -61,12 +74,12 @@ spo3fy --quality 320k --m3u "https://open.spotify.com/playlist/..."
 
 Running `spo3fy` without arguments opens the TUI:
 
-1. **Settings screen** — toggle output format, quality, cover art embedding, and M3U generation; accessible via `/settings` slash command
+1. **Settings screen** — choose output format (mp3/flac/aac/…), quality, cover art embedding, and M3U generation via number keys
 2. **Search/download** — paste a Spotify URL or type a search query; the TUI auto-detects URLs and resolves them to track listings
 3. **Progress screen** — per-track progress bars showing download status
 4. **Results screen** — summary of completed downloads with file paths
 
-**Slash commands** — type `/` to see available commands (e.g. `/settings`, `/clear`, `/quit`).
+**Slash commands** — type `/` to open the command palette: `/help`, `/search <q>`, `/output <path>`, `/quality <val>`, `/format <val>`, `/quit`.
 
 ## FAQ
 
