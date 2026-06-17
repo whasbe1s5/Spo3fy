@@ -340,6 +340,10 @@ func ScrapePlaylist(playlistID string) (*types.Playlist, error) {
 					playlist.ImageURL = img
 				} else if img := metaContent(doc, "property", "og:image"); img != "" {
 					playlist.ImageURL = img
+				} else if img, exists := doc.Find("link[rel='preload'][as='image']").Attr("href"); exists && img != "" {
+					playlist.ImageURL = img
+				} else if img, exists := doc.Find("img").Attr("src"); exists && img != "" {
+					playlist.ImageURL = img
 				}
 			}
 			if playlist.ImageURL == "" {
