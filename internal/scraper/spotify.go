@@ -194,11 +194,6 @@ func ScrapeTrack(trackID string) *types.Track {
 		}
 	}
 
-	// music:album — explicit album name override
-	if album := metaContent(doc, "name", "music:album"); album != "" {
-		track.AlbumName = album
-	}
-
 	// music:album:track — track number
 	if numStr := metaContent(doc, "name", "music:album:track"); numStr != "" {
 		if num, err := strconv.Atoi(numStr); err == nil {

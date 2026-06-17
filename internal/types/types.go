@@ -43,20 +43,20 @@ const (
 
 // Track represents a single track with all metadata.
 type Track struct {
-	ID               string
-	Name             string
-	URL              string
-	URI              string
-	Artists          []string
-	AlbumName        string
-	AlbumTrackCount  int
-	TrackNumber      int
-	DiscNumber       int
-	DurationMS       int
-	ReleaseDate      string
-	CoverArtURL      string
-	Playlist         string
-	Type             Type
+	ID              string
+	Name            string
+	URL             string
+	URI             string
+	Artists         []string
+	AlbumName       string
+	AlbumTrackCount int
+	TrackNumber     int
+	DiscNumber      int
+	DurationMS      int
+	ReleaseDate     string
+	CoverArtURL     string
+	Playlist        string
+	Type            Type
 }
 
 // String returns "Artist - Track Name".

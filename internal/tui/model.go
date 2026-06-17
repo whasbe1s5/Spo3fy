@@ -110,10 +110,11 @@ type model struct {
 }
 
 type commandItem struct {
-	cmd   string
-	desc  string
+	cmd      string
+	desc     string
 	takesArg bool
 }
+
 var commands = []commandItem{
 	{"/help", "Show this help screen", false},
 	{"/quit", "Exit Spo3fy", false},
@@ -141,7 +142,6 @@ type errMsg struct {
 	error
 }
 
-
 // cursorBlinkMsg toggles cursor visibility for URL input.
 type cursorBlinkMsg time.Time
 type spinnerTickMsg time.Time
@@ -151,8 +151,8 @@ type spinnerTickMsg time.Time
 // New creates and returns a new TUI model ready for tea.NewProgram.
 func New() tea.Model {
 	return &model{
-		state:  stateSettings,
-		cfg:    defaultSettings(),
+		state:   stateSettings,
+		cfg:     defaultSettings(),
 		spinner: newSpinner(),
 	}
 }
@@ -340,6 +340,7 @@ func (m *model) applyEdit() {
 		m.cfg.outputDir = m.editBuffer
 	}
 }
+
 var qualityOrder = []types.Quality{types.QualityBest, types.Quality320k, types.Quality256k,
 	types.Quality192k, types.Quality128k, types.Quality96k, types.QualityWorst}
 
@@ -828,7 +829,6 @@ func digitValue(msg tea.KeyMsg) int {
 	}
 	return int(msg.Runes[0] - '0')
 }
-
 
 // Run starts the Bubble Tea TUI and blocks until the user exits.
 func Run() error {

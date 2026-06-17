@@ -9,7 +9,6 @@ import (
 
 // ── Settings screen ─────────────────────────────────────────────────────
 
-
 func helpView(m model) string {
 	var b strings.Builder
 	b.WriteString(TitleStyle.Render("Slash Commands"))
@@ -31,6 +30,7 @@ func helpView(m model) string {
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
 		PanelStyle.Width(clampWidth(m.width)).Render(b.String()))
 }
+
 // settingsView renders the settings panel, URL input, and key bindings.
 func settingsView(m model) string {
 	if m.showHelp {

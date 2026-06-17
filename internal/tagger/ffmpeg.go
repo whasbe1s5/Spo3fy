@@ -6,8 +6,8 @@ package tagger
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -42,21 +42,43 @@ func EmbedCoverArt(audioPath, coverArtPath, ffmpegPath string) error {
 		binary = "ffmpeg"
 	}
 
+	ext := strings.ToLower(filepath.Ext(audioPath))
+	if ext == ".ogg" || ext == ".opus" || ext == ".vorbis" || ext == ".wav" {
+		return nil // Skip cover embedding for formats that do not support MJPEG streams
+	}
+
 	tmpPath := audioPath + ".tmp" + filepath.Ext(audioPath)
 
-	args := []string{
-		"-i", audioPath,
-		"-i", coverArtPath,
-		"-map", "0:0",
-		"-map", "1:0",
-		"-c", "copy",
-		"-id3v2_version", "3",
-		"-metadata:s:v", "title=Album cover",
-		"-metadata:s:v", "comment=Cover (front)",
-		tmpPath,
-		"-loglevel", "quiet",
-		"-hide_banner",
-		"-y",
+	var args []string
+	if ext == ".flac" || ext == ".m4a" || ext == ".mp4" || ext == ".aac" {
+		args = []string{
+			"-i", audioPath,
+			"-i", coverArtPath,
+			"-map", "0:a",
+			"-map", "1:v",
+			"-c", "copy",
+			"-disposition:v:0", "attached_pic",
+			tmpPath,
+			"-loglevel", "quiet",
+			"-hide_banner",
+			"-y",
+		}
+	} else {
+		// Default to MP3
+		args = []string{
+			"-i", audioPath,
+			"-i", coverArtPath,
+			"-map", "0:0",
+			"-map", "1:0",
+			"-c", "copy",
+			"-id3v2_version", "3",
+			"-metadata:s:v", "title=Album cover",
+			"-metadata:s:v", "comment=Cover (front)",
+			tmpPath,
+			"-loglevel", "quiet",
+			"-hide_banner",
+			"-y",
+		}
 	}
 
 	cmd := exec.Command(binary, args...)

@@ -10,9 +10,9 @@ import (
 
 // Defaults for path handling.
 const (
-	AppName     = "spo3fy"
-	DefaultDir  = ".local/share/spo3fy" // relative to user home
-	DefaultOut  = "Music/Spo3fy"        // relative to user home
+	AppName    = "spo3fy"
+	DefaultDir = ".local/share/spo3fy" // relative to user home
+	DefaultOut = "Music/Spo3fy"        // relative to user home
 )
 
 // Paths holds resolved paths for the current run.
