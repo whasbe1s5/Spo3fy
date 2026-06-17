@@ -1,3 +1,9 @@
 spo3fy
 *.exe
 /spo3fy
+.DS_Store
+.idea/
+.vscode/
+*.test
+*.out
+dist/
