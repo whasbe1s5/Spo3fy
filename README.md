@@ -19,11 +19,24 @@ Spo3fy downloads Spotify tracks, albums, and playlists as MP3 (or other formats)
 
 ## Prerequisites
 
-- **Go 1.26+** (for `go install`)
-- **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** — must be on `PATH`
-- **ffmpeg** — on `PATH`; on macOS it is auto-downloaded if missing
+**yt-dlp** and **ffmpeg** must be on your `PATH`. Install them once:
+
+```shell
+# macOS (Homebrew)
+brew install yt-dlp ffmpeg
+
+# Linux (apt)
+sudo apt install yt-dlp ffmpeg
+
+# Any platform (pip)
+pip install yt-dlp
+```
+
+Verify with `yt-dlp --version` and `ffmpeg -version`.
 
 ## Installation
+
+**Go 1.26+** is required for `go install`.
 
 **Option 1 — `go install`** (recommended):
 ```shell
