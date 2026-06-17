@@ -69,7 +69,7 @@ func (t Track) String() string {
 }
 
 // DefaultCoverArtURL is the fallback Spotify branding icon.
-const DefaultCoverArtURL = "https://developer.spotify.com/assets/branding-guidelines/icon3@2x.png"
+const DefaultCoverArtURL = "https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Green.png"
 
 // IsDefaultCover returns true if the cover art is the default Spotify icon.
 func (t Track) IsDefaultCover() bool {

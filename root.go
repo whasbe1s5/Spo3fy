@@ -233,6 +233,10 @@ func embedCoverTo(audioPath, coverURL string) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("downloading cover art: HTTP %d", resp.StatusCode)
+	}
+
 	f, err := os.Create(coverPath)
 	if err != nil {
 		return err
