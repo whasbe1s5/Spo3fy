@@ -222,8 +222,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// Global quit keys — always work.
-	if keyMatches(msg, "ctrl+c") || keyMatches(msg, "q") {
+	if keyMatches(msg, "ctrl+q") {
 		return m, tea.Quit
 	}
 	if keyMatches(msg, "esc") {
@@ -232,7 +231,9 @@ func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.editBuffer = ""
 			return m, nil
 		}
-		return m, tea.Quit
+		m.cmdMatches = nil
+		m.cmdSelected = -1
+		return m, nil
 	}
 	switch {
 	case keyMatches(msg, "enter"):
@@ -771,8 +772,8 @@ func keyMatches(msg tea.KeyMsg, pattern string) bool {
 		return msg.Type == tea.KeyBackspace
 	case "esc":
 		return msg.Type == tea.KeyEsc
-	case "ctrl+c":
-		return msg.Type == tea.KeyCtrlC
+	case "ctrl+q":
+		return msg.Type == tea.KeyCtrlQ
 	case "up":
 		return msg.Type == tea.KeyUp
 	case "down":
