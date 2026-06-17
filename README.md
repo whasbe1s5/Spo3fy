@@ -22,7 +22,7 @@ Spo3fy downloads Spotify tracks, albums, and playlists as MP3 (or other formats)
 **yt-dlp** and **ffmpeg** must be on your `PATH`. Install them once:
 
 ```shell
-# macOS (Homebrew)
+# macOS — install Homebrew first: https://brew.sh
 brew install yt-dlp ffmpeg
 
 # Linux (apt)
