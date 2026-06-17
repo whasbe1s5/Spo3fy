@@ -251,12 +251,12 @@ func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case isDigitKey(msg):
 		d := digitValue(msg)
 		switch d {
-		case 1, 2, 3:
+		case 1, 2:
 			m.cycleField(d)
-		case 5, 6, 7, 8:
+		case 4, 5, 6, 7:
 			m.toggleField(d)
-		case 4:
-			m.editingField = 4
+		case 3:
+			m.editingField = 3
 			m.editBuffer = ""
 		}
 		return m, nil
@@ -297,29 +297,10 @@ func (m *model) handleEditingKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) applyEdit() {
-	switch m.editingField {
-	case 1:
-		m.cfg.resourceType = types.Type(m.editBuffer)
-	case 2:
-		m.cfg.quality = types.Quality(m.editBuffer)
-	case 3:
-		m.cfg.format = types.Format(m.editBuffer)
-	case 4:
-		if m.editBuffer != "" {
-			m.cfg.outputDir = m.editBuffer
-		}
-	case 5:
-		m.cfg.groupDir = isAffirmative(m.editBuffer)
-	case 6:
-		m.cfg.createM3U = isAffirmative(m.editBuffer)
-	case 7:
-		m.cfg.skipCoverArt = isAffirmative(m.editBuffer)
-	case 8:
-		m.cfg.allAlbums = isAffirmative(m.editBuffer)
+	if m.editBuffer != "" {
+		m.cfg.outputDir = m.editBuffer
 	}
 }
-var typeOrder = []types.Type{types.TypeTrack, types.TypeAlbum, types.TypePlaylist, types.TypeArtist}
-
 var qualityOrder = []types.Quality{types.QualityBest, types.Quality320k, types.Quality256k,
 	types.Quality192k, types.Quality128k, types.Quality96k, types.QualityWorst}
 
@@ -338,23 +319,21 @@ func cycleOrder[T comparable](items []T, current T) T {
 func (m *model) cycleField(field int) {
 	switch field {
 	case 1:
-		m.cfg.resourceType = cycleOrder(typeOrder, m.cfg.resourceType)
-	case 2:
 		m.cfg.quality = cycleOrder(qualityOrder, m.cfg.quality)
-	case 3:
+	case 2:
 		m.cfg.format = cycleOrder(formatOrder, m.cfg.format)
 	}
 }
 
 func (m *model) toggleField(field int) {
 	switch field {
-	case 5:
+	case 4:
 		m.cfg.groupDir = !m.cfg.groupDir
-	case 6:
+	case 5:
 		m.cfg.createM3U = !m.cfg.createM3U
-	case 7:
+	case 6:
 		m.cfg.skipCoverArt = !m.cfg.skipCoverArt
-	case 8:
+	case 7:
 		m.cfg.allAlbums = !m.cfg.allAlbums
 	}
 }
@@ -720,14 +699,6 @@ func digitValue(msg tea.KeyMsg) int {
 	return int(msg.Runes[0] - '0')
 }
 
-func isAffirmative(s string) bool {
-	switch s {
-	case "y", "Y", "yes", "Yes", "YES", "1", "true", "True", "TRUE":
-		return true
-	default:
-		return false
-	}
-}
 
 // Run starts the Bubble Tea TUI and blocks until the user exits.
 func Run() error {

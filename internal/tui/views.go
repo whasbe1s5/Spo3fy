@@ -49,7 +49,7 @@ func settingsView(m model) string {
 	b.WriteString("\n\n")
 
 	// ── Help text ─────────────────────────────────────────────────────
-	b.WriteString(HelpStyle.Render("q / Ctrl+C: quit  |  Enter: start download  |  1-8: change setting"))
+	b.WriteString(HelpStyle.Render("q / Ctrl+C: quit  |  Enter: start download  |  1-7: change setting"))
 	b.WriteString("\n")
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
@@ -58,85 +58,49 @@ func settingsView(m model) string {
 
 func renderSettingsTable(m model) string {
 	var sb strings.Builder
-	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Type       ")) +
-		SettingsValStyle.Render(string(m.cfg.resourceType)))
-	sb.WriteString(HelpStyle.Render("  [1]"))
-	sb.WriteString("\n")
-
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Quality    ")) +
 		SettingsValStyle.Render(string(m.cfg.quality)))
-	sb.WriteString(HelpStyle.Render("  [2]"))
+	sb.WriteString(HelpStyle.Render("  [1]"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Format     ")) +
 		SettingsValStyle.Render(string(m.cfg.format)))
-	sb.WriteString(HelpStyle.Render("  [3]"))
+	sb.WriteString(HelpStyle.Render("  [2]"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Output Dir ")) +
 		SettingsValStyle.Render(m.cfg.outputDir))
-	sb.WriteString(HelpStyle.Render("  [4]"))
+	sb.WriteString(HelpStyle.Render("  [3]"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Group Dir  ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.groupDir)))
-	sb.WriteString(HelpStyle.Render("  [5]"))
+	sb.WriteString(HelpStyle.Render("  [4]"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Create M3U ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.createM3U)))
-	sb.WriteString(HelpStyle.Render("  [6]"))
+	sb.WriteString(HelpStyle.Render("  [5]"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  Skip Cover ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.skipCoverArt)))
-	sb.WriteString(HelpStyle.Render("  [7]"))
+	sb.WriteString(HelpStyle.Render("  [6]"))
 	sb.WriteString("\n")
 
 	sb.WriteString(SettingsKeyStyle.Render(fmt.Sprintf("  All Albums ")) +
 		SettingsValStyle.Render(boolStr(m.cfg.allAlbums)))
-	sb.WriteString(HelpStyle.Render("  [8]"))
+	sb.WriteString(HelpStyle.Render("  [7]"))
 
 	return sb.String()
 }
 
 func renderEditingPrompt(m model) string {
-	var fieldName, hints string
-	switch m.editingField {
-	case 1:
-		fieldName = "Resource Type"
-		hints = "track, album, playlist, artist"
-	case 2:
-		fieldName = "Quality"
-		hints = "best, 320k, 256k, 192k, 128k, 96k, worst"
-	case 3:
-		fieldName = "Format"
-		hints = "mp3, aac, flac, m4a, opus, vorbis, wav"
-	case 4:
-		fieldName = "Output Directory"
-		hints = "enter a folder path"
-	case 5:
-		fieldName = "Group by Directory"
-		hints = "true / false"
-	case 6:
-		fieldName = "Create M3U Playlist"
-		hints = "true / false"
-	case 7:
-		fieldName = "Skip Cover Art"
-		hints = "true / false"
-	case 8:
-		fieldName = "All Albums"
-		hints = "true / false"
-	default:
-		fieldName = "Setting"
-		hints = ""
-	}
-
 	result := fmt.Sprintf("%s\n%s",
-		SettingsKeyStyle.Render("Editing "+fieldName),
+		SettingsKeyStyle.Render("Editing Output Directory"),
 		InputPromptStyle.Render("  "+m.editBuffer))
-	if hints != "" {
-		result += "\n" + HelpStyle.Render("  options: "+hints)
+	if m.editBuffer == "" {
+		result += "\n" + HelpStyle.Render("  enter a folder path")
 	}
 	result += "\n" + HelpStyle.Render("  Enter to confirm, Esc to cancel")
 	return result
