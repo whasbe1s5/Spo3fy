@@ -100,6 +100,7 @@ type model struct {
 	errCh      chan error
 
 	downloadRunning bool
+	cursorVisible   bool
 }
 
 // ── Internal message types ──────────────────────────────────────────────
@@ -120,6 +121,9 @@ type errMsg struct {
 	error
 }
 
+
+// cursorBlinkMsg toggles cursor visibility for URL input.
+type cursorBlinkMsg time.Time
 type spinnerTickMsg time.Time
 
 // ── Constructor ─────────────────────────────────────────────────────────
@@ -133,12 +137,11 @@ func New() tea.Model {
 	}
 }
 
-// ── Init ────────────────────────────────────────────────────────────────
-
 func (m model) Init() tea.Cmd {
-	return tea.Tick(80*time.Millisecond, func(t time.Time) tea.Msg {
-		return spinnerTickMsg(t)
-	})
+	return tea.Batch(
+		tea.Tick(80*time.Millisecond, func(t time.Time) tea.Msg { return spinnerTickMsg(t) }),
+		tea.Tick(530*time.Millisecond, func(t time.Time) tea.Msg { return cursorBlinkMsg(t) }),
+	)
 }
 
 // ── Update ──────────────────────────────────────────────────────────────
@@ -189,6 +192,9 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.downloadRunning = false
 		m.state = stateResults
 		return m, nil
+	case cursorBlinkMsg:
+		m.cursorVisible = !m.cursorVisible
+		return m, tea.Tick(530*time.Millisecond, func(t time.Time) tea.Msg { return cursorBlinkMsg(t) })
 	}
 
 	return m, nil

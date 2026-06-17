@@ -30,12 +30,18 @@ func settingsView(m model) string {
 	if m.editingField > 0 {
 		b.WriteString(SettingsKeyStyle.Render("Value:"))
 		b.WriteString(" " + InputPromptStyle.Render(m.editBuffer))
+		if m.cursorVisible {
+			b.WriteString("▎")
+		}
 		if m.editBuffer == "" {
 			b.WriteString(HelpStyle.Render(" (type value, Enter to confirm, Esc to cancel)"))
 		}
 	} else {
 		b.WriteString(prompt)
 		b.WriteString(m.urlInput)
+		if m.cursorVisible {
+			b.WriteString("▎")
+		}
 		if m.urlInput == "" {
 			b.WriteString(HelpStyle.Render(" (paste a Spotify URL)"))
 		}
@@ -129,21 +135,29 @@ func renderEditingPrompt(m model) string {
 // progressView renders the live download progress view.
 func progressView(m model) string {
 	var b strings.Builder
+	total := m.downloadsTotal
+	if total == 0 {
+		total = 1
+	}
+
+	// Overall progress: completed tracks + current track's fraction
+	overall := (float64(m.downloadsDone) + m.progress.Percent/100.0) / float64(total) * 100.0
 
 	b.WriteString(TitleStyle.Render("⬇ Spo3fy — Downloading"))
 	b.WriteString("\n\n")
 
-	// Spinner
+	// Spinner + track count
 	sp := SpinnerStyle.Render(m.spinner.View())
 	b.WriteString(sp)
 	b.WriteString(" ")
-
-	// Track info
-	info := fmt.Sprintf("[%d/%d] %s",
-		m.downloadsDone+1, m.downloadsTotal,
-		m.progress.TrackName)
-	b.WriteString(info)
+	b.WriteString(fmt.Sprintf("[%d/%d]", m.downloadsDone+1, m.downloadsTotal))
 	b.WriteString("\n\n")
+
+	// Current track name
+	if m.progress.TrackName != "" {
+		b.WriteString(m.progress.TrackName)
+		b.WriteString("\n")
+	}
 
 	// Status label
 	status := m.progress.Status
@@ -153,15 +167,15 @@ func progressView(m model) string {
 	b.WriteString(HelpStyle.Render(status))
 	b.WriteString("\n")
 
-	// Progress bar
+	// Overall progress bar
 	barWidth := clampWidth(m.width) - 4
 	if barWidth < 10 {
 		barWidth = 10
 	}
-	bar := ProgressBar(m.progress.Percent, barWidth)
+	bar := ProgressBar(overall, barWidth)
 	b.WriteString("  ")
 	b.WriteString(bar)
-	b.WriteString(fmt.Sprintf("  %.0f%%", m.progress.Percent))
+	b.WriteString(fmt.Sprintf("  %.0f%%", overall))
 	b.WriteString("\n\n")
 
 	b.WriteString(HelpStyle.Render("q / Ctrl+C: cancel and quit"))
