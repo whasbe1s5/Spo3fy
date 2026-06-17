@@ -773,6 +773,14 @@ func keyMatches(msg tea.KeyMsg, pattern string) bool {
 		return msg.Type == tea.KeyEsc
 	case "ctrl+c":
 		return msg.Type == tea.KeyCtrlC
+	case "up":
+		return msg.Type == tea.KeyUp
+	case "down":
+		return msg.Type == tea.KeyDown
+	case "tab":
+		return msg.Type == tea.KeyTab
+	case "shift+tab":
+		return msg.Type == tea.KeyShiftTab
 	case "q":
 		return msg.Type == tea.KeyRunes && string(msg.Runes) == "q"
 	default:
