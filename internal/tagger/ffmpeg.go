@@ -6,6 +6,7 @@ package tagger
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -41,7 +42,7 @@ func EmbedCoverArt(audioPath, coverArtPath, ffmpegPath string) error {
 		binary = "ffmpeg"
 	}
 
-	tmpPath := audioPath + ".tmp"
+	tmpPath := audioPath + ".tmp" + filepath.Ext(audioPath)
 
 	args := []string{
 		"-i", audioPath,
@@ -92,7 +93,7 @@ func TagMetadata(audioPath string, track types.Track, ffmpegPath string) error {
 		trackTag += "/" + strconv.Itoa(track.AlbumTrackCount)
 	}
 
-	tmpPath := audioPath + ".tmp"
+	tmpPath := audioPath + ".tmp" + filepath.Ext(audioPath)
 
 	args := []string{
 		"-i", audioPath,

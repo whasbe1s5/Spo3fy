@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-06-17
+
+### Fixed
+
+- Cover art embedding: ffmpeg couldn't determine output format from `.tmp` extension, causing silent failure on both `EmbedCoverArt` and `TagMetadata`. Temporary files now carry the proper extension (e.g. `.tmp.mp3`) so ffmpeg selects the correct muxer.
+
 ## [0.1.0] - 2025-06-17
 
 ### Added
@@ -34,3 +40,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Double file extension on output filenames.
 
 [0.1.0]: https://github.com/whasbe1s5/Spo3fy/releases/tag/v0.1.0
+
+[0.1.1]: https://github.com/whasbe1s5/Spo3fy/releases/tag/v0.1.1
