@@ -1,12 +1,18 @@
+# Binary
 spo3fy
 *.exe
-/spo3fy
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
 .idea/
 .vscode/
+
+# Go
 *.test
 *.out
+
+# Output
 dist/
-node_modules/
-package-lock.json
-package.json
