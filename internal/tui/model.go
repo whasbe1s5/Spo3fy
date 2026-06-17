@@ -246,8 +246,13 @@ func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case isDigitKey(msg):
 		d := digitValue(msg)
-		if d >= 1 && d <= 8 {
-			m.editingField = d
+		switch d {
+		case 1, 2, 3:
+			m.cycleField(d)
+		case 5, 6, 7, 8:
+			m.toggleField(d)
+		case 4:
+			m.editingField = 4
 			m.editBuffer = ""
 		}
 		return m, nil
@@ -289,24 +294,64 @@ func (m *model) handleEditingKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m *model) applyEdit() {
 	switch m.editingField {
-	case 1: // ResourceType
+	case 1:
 		m.cfg.resourceType = types.Type(m.editBuffer)
-	case 2: // Quality
+	case 2:
 		m.cfg.quality = types.Quality(m.editBuffer)
-	case 3: // Format
+	case 3:
 		m.cfg.format = types.Format(m.editBuffer)
-	case 4: // OutputDir
+	case 4:
 		if m.editBuffer != "" {
 			m.cfg.outputDir = m.editBuffer
 		}
-	case 5: // GroupDir
+	case 5:
 		m.cfg.groupDir = isAffirmative(m.editBuffer)
-	case 6: // CreateM3U
+	case 6:
 		m.cfg.createM3U = isAffirmative(m.editBuffer)
-	case 7: // SkipCoverArt
+	case 7:
 		m.cfg.skipCoverArt = isAffirmative(m.editBuffer)
-	case 8: // AllAlbums
+	case 8:
 		m.cfg.allAlbums = isAffirmative(m.editBuffer)
+	}
+}
+var typeOrder = []types.Type{types.TypeTrack, types.TypeAlbum, types.TypePlaylist, types.TypeArtist}
+
+var qualityOrder = []types.Quality{types.QualityBest, types.Quality320k, types.Quality256k,
+	types.Quality192k, types.Quality128k, types.Quality96k, types.QualityWorst}
+
+var formatOrder = []types.Format{types.FormatMP3, types.FormatAAC, types.FormatFLAC,
+	types.FormatM4A, types.FormatOpus, types.FormatVorbis, types.FormatWAV}
+
+func cycleOrder[T comparable](items []T, current T) T {
+	for i, v := range items {
+		if v == current {
+			return items[(i+1)%len(items)]
+		}
+	}
+	return items[0]
+}
+
+func (m *model) cycleField(field int) {
+	switch field {
+	case 1:
+		m.cfg.resourceType = cycleOrder(typeOrder, m.cfg.resourceType)
+	case 2:
+		m.cfg.quality = cycleOrder(qualityOrder, m.cfg.quality)
+	case 3:
+		m.cfg.format = cycleOrder(formatOrder, m.cfg.format)
+	}
+}
+
+func (m *model) toggleField(field int) {
+	switch field {
+	case 5:
+		m.cfg.groupDir = !m.cfg.groupDir
+	case 6:
+		m.cfg.createM3U = !m.cfg.createM3U
+	case 7:
+		m.cfg.skipCoverArt = !m.cfg.skipCoverArt
+	case 8:
+		m.cfg.allAlbums = !m.cfg.allAlbums
 	}
 }
 
