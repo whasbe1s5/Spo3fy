@@ -3,6 +3,8 @@ package tui
 import (
 	"fmt"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 // ── Settings screen ─────────────────────────────────────────────────────
@@ -44,7 +46,8 @@ func settingsView(m model) string {
 	b.WriteString(HelpStyle.Render("q / Ctrl+C: quit  |  Enter: start download  |  1-8: change setting"))
 	b.WriteString("\n")
 
-	return PanelStyle.Width(clampWidth(m.width)).Render(b.String())
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+		PanelStyle.Width(clampWidth(m.width)).Render(b.String()))
 }
 
 func renderSettingsTable(m model) string {
@@ -161,11 +164,11 @@ func progressView(m model) string {
 	b.WriteString(fmt.Sprintf("  %.0f%%", m.progress.Percent))
 	b.WriteString("\n\n")
 
-	// Help
 	b.WriteString(HelpStyle.Render("q / Ctrl+C: cancel and quit"))
 	b.WriteString("\n")
 
-	return PanelStyle.Width(clampWidth(m.width)).Render(b.String())
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+		PanelStyle.Width(clampWidth(m.width)).Render(b.String()))
 }
 
 // ── Results screen ──────────────────────────────────────────────────────
@@ -214,7 +217,8 @@ func resultsView(m model) string {
 	b.WriteString(HelpStyle.Render("Press Enter to return to settings, q / Ctrl+C to quit"))
 	b.WriteString("\n")
 
-	return PanelStyle.Width(clampWidth(m.width)).Render(b.String())
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+		PanelStyle.Width(clampWidth(m.width)).Render(b.String()))
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────
