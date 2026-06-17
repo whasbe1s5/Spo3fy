@@ -59,7 +59,7 @@ func (p *Paths) CleanTemp() error {
 
 // OutputPath returns the full output path for a track.
 func (p *Paths) OutputPath(trackName string, ext string) string {
-	name := safeFilename(trackName)
+	name := SafeFilename(trackName)
 	return filepath.Join(p.OutDir, name+"."+ext)
 }
 
@@ -70,8 +70,8 @@ func homeDir() string {
 	return os.Getenv("HOME")
 }
 
-// safeFilename replaces characters unsafe for filesystem names.
-func safeFilename(name string) string {
+// SafeFilename replaces characters unsafe for filesystem names.
+func SafeFilename(name string) string {
 	result := make([]byte, 0, len(name))
 	for i := 0; i < len(name); i++ {
 		c := name[i]

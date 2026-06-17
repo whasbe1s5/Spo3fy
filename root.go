@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/whasbe1s/spo3fy-go/internal/config"
@@ -134,6 +135,7 @@ func headlessDownload(query string) error {
 		done := make(chan error, 1)
 
 		go func() {
+			defer close(progress)
 			done <- downloader.Download(searchQuery, quality, format, outputPath, progress, 3)
 		}()
 		// Show progress dots while downloading
@@ -213,7 +215,19 @@ func embedCoverTo(audioPath, coverURL string) error {
 	}
 	coverPath := filepath.Join(coverDir, "cover"+ext)
 
-	resp, err := http.Get(coverURL) //nolint:noctx
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 3 {
+				return fmt.Errorf("too many redirects")
+			}
+			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
+				return fmt.Errorf("redirect to non-HTTP(S) scheme: %s", req.URL.Scheme)
+			}
+			return nil
+		},
+	}
+	resp, err := client.Get(coverURL)
 	if err != nil {
 		return fmt.Errorf("downloading cover art: %w", err)
 	}

@@ -221,6 +221,18 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// State-specific routing
+	switch m.state {
+	case stateResults:
+		return m.handleResultsKeys(msg)
+	case stateDownloading:
+		if keyMatches(msg, "ctrl+q") {
+			return m, tea.Quit
+		}
+		return m, nil
+	}
+
+	// Global handlers (for stateSettings)
 	if keyMatches(msg, "ctrl+q") {
 		return m, tea.Quit
 	}
@@ -593,7 +605,7 @@ func processTrack(
 	progressCh chan<- progressMsg,
 ) types.DownloadResult {
 	query := fmt.Sprintf("ytsearch:%s audio", track.String())
-	outputPath := paths.OutputPath(track.String(), string(cfg.format))
+	outputPath := filepath.Join(paths.OutDir, config.SafeFilename(track.String()))
 
 	pCh := make(chan downloader.ProgressUpdate, 100)
 
@@ -671,7 +683,18 @@ func downloadCoverArt(url, tempDir string) (string, error) {
 	}
 	dest := filepath.Join(tempDir, "cover"+ext)
 
-	client := &http.Client{Timeout: 15 * time.Second}
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 3 {
+				return fmt.Errorf("too many redirects")
+			}
+			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
+				return fmt.Errorf("redirect to non-HTTP(S) scheme: %s", req.URL.Scheme)
+			}
+			return nil
+		},
+	}
 	resp, err := client.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("fetch cover: %w", err)

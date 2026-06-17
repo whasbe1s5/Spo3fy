@@ -49,7 +49,6 @@ func Download(
 		"--ignore-errors",
 		"--no-overwrites",
 		"--no-playlist",
-		"--prefer-ffmpeg",
 		"--extract-audio",
 		"--audio-format", string(format),
 		"--audio-quality", string(quality),
@@ -167,11 +166,7 @@ func postProcessorArgs(trackName string) string {
 // ffmpegQuote wraps a value in quotes if it contains spaces, to satisfy
 // yt-dlp's argument splitting for the --postprocessor-args flag.
 func ffmpegQuote(s string) string {
-	if s == "" {
-		return ""
-	}
-	if strings.Contains(s, " ") {
-		return `"` + s + `"`
-	}
-	return s
+	// Escape embedded double-quotes; always quote to prevent shell
+	// metacharacter injection through track metadata.
+	return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
 }
