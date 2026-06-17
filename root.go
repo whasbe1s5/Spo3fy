@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/whasbe1s5/spo3fy-go/internal/config"
-	"github.com/whasbe1s5/spo3fy-go/internal/downloader"
-	"github.com/whasbe1s5/spo3fy-go/internal/scraper"
-	"github.com/whasbe1s5/spo3fy-go/internal/tagger"
-	"github.com/whasbe1s5/spo3fy-go/internal/tui"
-	"github.com/whasbe1s5/spo3fy-go/internal/types"
+	"github.com/whasbe1s5/Spo3fy/internal/config"
+	"github.com/whasbe1s5/Spo3fy/internal/downloader"
+	"github.com/whasbe1s5/Spo3fy/internal/scraper"
+	"github.com/whasbe1s5/Spo3fy/internal/tagger"
+	"github.com/whasbe1s5/Spo3fy/internal/tui"
+	"github.com/whasbe1s5/Spo3fy/internal/types"
 )
 
 var (

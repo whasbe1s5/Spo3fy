@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/whasbe1s5/spo3fy-go/internal/types"
+	"github.com/whasbe1s5/Spo3fy/internal/types"
 )
 
 // ProgressUpdate holds the current download progress for the TUI.

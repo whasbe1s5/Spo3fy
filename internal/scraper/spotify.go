@@ -15,7 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"github.com/whasbe1s5/spo3fy-go/internal/types"
+	"github.com/whasbe1s5/Spo3fy/internal/types"
 )
 
 const (

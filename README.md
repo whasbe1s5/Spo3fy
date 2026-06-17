@@ -27,7 +27,7 @@ Spo3fy downloads Spotify tracks, albums, and playlists as MP3 (or other formats)
 
 **Option 1 — `go install`** (recommended):
 ```shell
-go install github.com/whasbe1s5/spo3fy-go@latest
+go install github.com/whasbe1s5/Spo3fy@latest
 ```
 This places `spo3fy` in your Go bin directory. Make sure that directory is on your `PATH`:
 ```shell
@@ -36,8 +36,8 @@ export PATH="$(go env GOPATH)/bin:$PATH"   # add to ~/.zshrc or ~/.bashrc
 
 **Option 2 — manual** (from source):
 ```shell
-git clone https://github.com/whasbe1s5/spo3fy-go.git
-cd spo3fy-go
+git clone https://github.com/whasbe1s5/Spo3fy.git
+cd Spo3fy
 go build -o spo3fy .
 cp spo3fy ~/.local/bin/    # or /usr/local/bin/, or any directory on PATH
 ```

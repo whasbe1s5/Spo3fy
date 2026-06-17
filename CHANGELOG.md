@@ -33,4 +33,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - State machine: keys leaking into wrong TUI states.
   - Double file extension on output filenames.
 
-[0.1.0]: https://github.com/whasbe1s5/spo3fy-go/releases/tag/v0.1.0
+[0.1.0]: https://github.com/whasbe1s5/Spo3fy/releases/tag/v0.1.0
