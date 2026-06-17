@@ -13,7 +13,12 @@ import (
 func settingsView(m model) string {
 	var b strings.Builder
 
-	b.WriteString(TitleStyle.Render("⚙ Spo3fy — Settings"))
+	b.WriteString(TitleStyle.Render(`  ___                   __
+ / __|_ __  ___  ___   / _|_   _
+ \__ \ '_ \/ _ \/ _ \ |  _| | | |
+ |___/ .__/\___/\___/ |_|  |_|_|
+     |_|
+`))
 	b.WriteString("\n")
 
 	// ── Settings panel ────────────────────────────────────────────────
