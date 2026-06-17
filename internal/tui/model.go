@@ -244,20 +244,17 @@ func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case isRuneKey(msg):
-		// Typing into URL input.
-		m.urlInput += string(msg.Runes)
-		return m, nil
-	}
-
-	// Digit keys start editing a setting.
-	if isDigitKey(msg) {
+	case isDigitKey(msg):
 		d := digitValue(msg)
 		if d >= 1 && d <= 8 {
 			m.editingField = d
 			m.editBuffer = ""
-			return m, nil
 		}
+		return m, nil
+
+	case isRuneKey(msg):
+		m.urlInput += string(msg.Runes)
+		return m, nil
 	}
 
 	return m, nil

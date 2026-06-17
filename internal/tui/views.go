@@ -101,33 +101,45 @@ func renderSettingsTable(m model) string {
 }
 
 func renderEditingPrompt(m model) string {
-	var fieldName string
+	var fieldName, hints string
 	switch m.editingField {
 	case 1:
 		fieldName = "Resource Type"
+		hints = "track, album, playlist, artist"
 	case 2:
 		fieldName = "Quality"
+		hints = "best, 320k, 256k, 192k, 128k, 96k, worst"
 	case 3:
 		fieldName = "Format"
+		hints = "mp3, aac, flac, m4a, opus, vorbis, wav"
 	case 4:
 		fieldName = "Output Directory"
+		hints = "enter a folder path"
 	case 5:
 		fieldName = "Group by Directory"
+		hints = "true / false"
 	case 6:
 		fieldName = "Create M3U Playlist"
+		hints = "true / false"
 	case 7:
 		fieldName = "Skip Cover Art"
+		hints = "true / false"
 	case 8:
 		fieldName = "All Albums"
+		hints = "true / false"
 	default:
 		fieldName = "Setting"
+		hints = ""
 	}
 
-	return fmt.Sprintf("%s: %s\n%s",
+	result := fmt.Sprintf("%s\n%s",
 		SettingsKeyStyle.Render("Editing "+fieldName),
-		InputPromptStyle.Render(m.editBuffer),
-		HelpStyle.Render("Enter to confirm, Esc to cancel"),
-	)
+		InputPromptStyle.Render("  "+m.editBuffer))
+	if hints != "" {
+		result += "\n" + HelpStyle.Render("  options: "+hints)
+	}
+	result += "\n" + HelpStyle.Render("  Enter to confirm, Esc to cancel")
+	return result
 }
 
 // ── Progress screen ─────────────────────────────────────────────────────
