@@ -104,6 +104,7 @@ type model struct {
 
 	downloadRunning bool
 	cursorVisible   bool
+	showHelp        bool
 }
 
 // ── Internal message types ──────────────────────────────────────────────
@@ -233,12 +234,15 @@ func (m *model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.editingField > 0 {
 		return m.handleEditingKeys(msg)
 	}
-
 	switch {
 	case keyMatches(msg, "enter"):
 		if m.urlInput == "" {
 			return m, nil
 		}
+		if strings.HasPrefix(m.urlInput, "/") {
+			return m.handleSlashCmd(m.urlInput)
+		}
+		m.showHelp = false
 		m.autoDetectType()
 		return m.startDownload()
 
@@ -363,7 +367,6 @@ func (m *model) handleResultsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// resetForSettings clears download state and returns to the settings screen.
 func (m *model) resetForSettings() {
 	m.state = stateSettings
 	m.progress = downloader.ProgressUpdate{}
@@ -372,6 +375,43 @@ func (m *model) resetForSettings() {
 	m.downloadsTotal = 0
 	m.downloadsDone = 0
 	m.downloadRunning = false
+	m.showHelp = false
+}
+
+func (m *model) handleSlashCmd(input string) (tea.Model, tea.Cmd) {
+	m.urlInput = input
+	words := strings.Fields(input)
+	if len(words) == 0 {
+		return m, nil
+	}
+	cmd := words[0]
+	switch cmd {
+	case "/help":
+		m.showHelp = !m.showHelp
+		m.urlInput = ""
+		return m, nil
+	case "/search":
+		if len(words) < 2 {
+			m.err = fmt.Errorf("usage: /search <query>")
+			return m, nil
+		}
+		searchQuery := strings.Join(words[1:], " ")
+		m.urlInput = searchQuery
+		m.autoDetectType()
+		return m.startDownload()
+	case "/output":
+		if len(words) < 2 {
+			return m, nil
+		}
+		m.cfg.outputDir = words[1]
+		m.urlInput = ""
+		return m, nil
+	case "/quit", "/exit":
+		return m, tea.Quit
+	default:
+		m.urlInput = ""
+		return m, nil
+	}
 }
 
 // ── Start download ──────────────────────────────────────────────────────
@@ -434,10 +474,17 @@ func downloadWorker(
 		return
 	}
 
-	// 3. Resolve the Spotify link to tracks.
+	// 3. Resolve the query to tracks.
 	tracks, err := scraper.Link(urlInput)
-	if err != nil {
-		errCh <- fmt.Errorf("resolve link: %w", err)
+	if err != nil || len(tracks) == 0 {
+		tracks, err = scraper.Search(urlInput, cfg.resourceType)
+		if err != nil {
+			errCh <- fmt.Errorf("resolve: %w", err)
+			return
+		}
+	}
+	if len(tracks) == 0 {
+		errCh <- fmt.Errorf("no tracks found for: %s", urlInput)
 		return
 	}
 

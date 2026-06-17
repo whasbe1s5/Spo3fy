@@ -9,8 +9,33 @@ import (
 
 // ── Settings screen ─────────────────────────────────────────────────────
 
+
+func helpView(m model) string {
+	var b strings.Builder
+	b.WriteString(TitleStyle.Render("Slash Commands"))
+	b.WriteString("\n\n")
+
+	cmds := []struct{ cmd, desc string }{
+		{"/help", "Toggle this help screen"},
+		{"/search <query>", "Search iTunes for tracks"},
+		{"/output <path>", "Set download output directory"},
+		{"/quit, /exit", "Exit Spo3fy"},
+	}
+	for _, c := range cmds {
+		b.WriteString(SettingsKeyStyle.Render("  " + c.cmd))
+		b.WriteString("\n")
+		b.WriteString(HelpStyle.Render("    " + c.desc))
+		b.WriteString("\n\n")
+	}
+	b.WriteString(HelpStyle.Render("  Press Enter with /help to dismiss"))
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+		PanelStyle.Width(clampWidth(m.width)).Render(b.String()))
+}
 // settingsView renders the settings panel, URL input, and key bindings.
 func settingsView(m model) string {
+	if m.showHelp {
+		return helpView(m)
+	}
 	var b strings.Builder
 
 	b.WriteString(TitleStyle.Render("                  _____  __       \n" +
