@@ -51,7 +51,7 @@ func defaultSettings() settings {
 		resourceType: types.TypeTrack,
 		quality:      types.QualityBest,
 		format:       types.FormatMP3,
-		outputDir:    "~/Music/Spo3fy",
+		outputDir:    "", // empty → config.Resolve picks ~/Music/Spo3fy
 	}
 }
 

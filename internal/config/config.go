@@ -6,6 +6,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // Defaults for path handling.
@@ -27,11 +28,15 @@ type Paths struct {
 // If dataDir or outDir are empty, defaults are used.
 func Resolve(dataDir, outDir string) *Paths {
 	home := homeDir()
-	if dataDir == "" {
+	if dataDir == "" || dataDir == "~" {
 		dataDir = filepath.Join(home, DefaultDir)
+	} else if strings.HasPrefix(dataDir, "~/") {
+		dataDir = filepath.Join(home, dataDir[2:])
 	}
-	if outDir == "" {
+	if outDir == "" || outDir == "~" {
 		outDir = filepath.Join(home, DefaultOut)
+	} else if strings.HasPrefix(outDir, "~/") {
+		outDir = filepath.Join(home, outDir[2:])
 	}
 	return &Paths{
 		DataDir: dataDir,

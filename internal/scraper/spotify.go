@@ -178,11 +178,38 @@ type embedContainerJSON struct {
 								MaxWidth int    `json:"maxWidth"`
 							} `json:"image"`
 						} `json:"visualIdentity"`
+						CoverArt struct {
+							Sources []struct {
+								URL    string `json:"url"`
+								Width  *int   `json:"width"`
+								Height *int   `json:"height"`
+							} `json:"sources"`
+						} `json:"coverArt"`
 					} `json:"entity"`
 				} `json:"data"`
 			} `json:"state"`
 		} `json:"pageProps"`
 	} `json:"props"`
+}
+
+// resolveCoverURL picks the best cover image from a Spotify embed entity.
+// Checks visualIdentity.image first (tracks/albums), then coverArt.sources (playlists).
+func resolveCoverURL(e embedContainerJSON) string {
+	entity := e.Props.PageProps.State.Data.Entity
+	for _, img := range entity.VisualIdentity.Image {
+		if img.MaxWidth == 640 {
+			return img.URL
+		}
+	}
+	if len(entity.VisualIdentity.Image) > 0 {
+		return entity.VisualIdentity.Image[0].URL
+	}
+	for _, src := range entity.CoverArt.Sources {
+		if src.URL != "" {
+			return src.URL
+		}
+	}
+	return types.DefaultCoverArtURL
 }
 
 // ---- HTTP helpers ----
@@ -388,20 +415,7 @@ func ScrapeAlbum(albumID string) (*types.Album, error) {
 		album.Name = "Unknown Album"
 	}
 
-	coverURL := ""
-	for _, img := range entity.VisualIdentity.Image {
-		if img.MaxWidth == 640 {
-			coverURL = img.URL
-			break
-		}
-	}
-	if coverURL == "" && len(entity.VisualIdentity.Image) > 0 {
-		coverURL = entity.VisualIdentity.Image[0].URL
-	}
-	if coverURL == "" {
-		coverURL = types.DefaultCoverArtURL
-	}
-	album.ImageURL = coverURL
+	album.ImageURL = resolveCoverURL(containerData)
 
 	entries := tryParseEmbedJSON(body)
 	album.TotalTracks = len(entries)
@@ -465,20 +479,7 @@ func ScrapePlaylist(playlistID string) (*types.Playlist, error) {
 		playlist.Name = "Unknown Playlist"
 	}
 
-	coverURL := ""
-	for _, img := range entity.VisualIdentity.Image {
-		if img.MaxWidth == 640 {
-			coverURL = img.URL
-			break
-		}
-	}
-	if coverURL == "" && len(entity.VisualIdentity.Image) > 0 {
-		coverURL = entity.VisualIdentity.Image[0].URL
-	}
-	if coverURL == "" {
-		coverURL = types.DefaultCoverArtURL
-	}
-	playlist.ImageURL = coverURL
+	playlist.ImageURL = resolveCoverURL(containerData)
 
 	entries := tryParseEmbedJSON(body)
 	playlist.Tracks = make([]types.Track, len(entries))
